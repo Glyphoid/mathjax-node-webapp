@@ -17,7 +17,6 @@ server = http.createServer(function(req, resp) {
 	    });
 	    
 	    req.on("end", function() {
-		console.log("Parsing reqBody");  // DEBUG
 		try {
 		    mjInputObj = JSON.parse(reqBody);
 

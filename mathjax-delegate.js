@@ -26,8 +26,17 @@ var MathJaxDelegate = function() {
 
 	if (input.imageFormat == "png") {
 	    mjInput.png = true;
-	    mjInput.width = input.imageWidth;
-	    mjInput.dpi = input.imageDpi;
+	    if (typeof input.imageWidth === "undefined") {
+		mjInput.width = 400;
+	    } else {
+		mjInput.width = input.imageWidth;
+	    }
+
+	    if (typeof input.imageDpi === "undefined") {
+		mjInput.dpi = 800;
+	    } else {
+		mjInput.dpi = input.imageDpi;
+	    }
 	} else if (input.imageFormat ="MathML") {
 	    mjInput.mml = true;
 	} else {
