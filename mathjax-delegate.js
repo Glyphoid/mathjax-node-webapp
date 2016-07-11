@@ -44,6 +44,10 @@ var MathJaxDelegate = function() {
 	}
 
 	mjAPI.typeset(mjInput, function(data) {
+	    if (data.errors) {
+		console.error("Encountered errors during typeset:",
+			      data.errors);
+	    }
 	    callback(data);
 	});
     };

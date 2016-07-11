@@ -11,7 +11,8 @@ var responseHeader = {
 
 var respErrorsKey = "errors";
 
-mjDelegate = new MathJaxDelegate()
+var mjDelegate = new MathJaxDelegate();
+
 
 server = http.createServer(function(req, resp) {
     if (req.method == "POST") {
@@ -23,7 +24,7 @@ server = http.createServer(function(req, resp) {
 	    
 	    req.on("end", function() {
 		try {
-		    mjInputObj = JSON.parse(reqBody);
+		    var mjInputObj = JSON.parse(reqBody);
 
 		    mjDelegate.convert(mjInputObj, function(data) {
 			if (data.errors) {
@@ -33,25 +34,37 @@ server = http.createServer(function(req, resp) {
 					        "conversion"]
 			    }));
 			} else {
-			    outObj = {
+			    var outObj = {
 				"mathTex": mjInputObj.mathTex,
 			    };
 
 			    if (mjInputObj.imageFormat == "png") {
-				// TODO: Remove ulgy logic
-				var png_data_prefix = "data:image/png;base64,";
-				outObj.conversionResult = data.png;
+				if (typeof data.png === "undefined") {
+				    console.log("Failed conversion? data =", data);
+				    resp.writeHead(500, responseHeader);
+				    resp.end(JSON.stringify({
+					respErrorsKey: ["Error occurred during " +
+							"conversion"]
+				    }));
+				} else {
 
-				if (outObj.conversionResult.substring(0, png_data_prefix.length) ===
-				    png_data_prefix) {
-				    outObj.conversionResult = 
-					outObj.conversionResult.substring(png_data_prefix.length,
-									  outObj.conversionResult.length);
+				    // TODO: Remove ulgy logic
+				    var png_data_prefix = "data:image/png;base64,";
+				    outObj.conversionResult = data.png;
+
+				    if (outObj.conversionResult.substring(0, png_data_prefix.length) ===
+					png_data_prefix) {
+					outObj.conversionResult = 
+					    outObj.conversionResult.substring(png_data_prefix.length,
+									      outObj.conversionResult.length);
+				    }
 				}
 
 			    } else if (mjInputObj.imageFormat == "MathML") {
 				outObj.conversionResult = data.mml;
 			    } else {
+				console.log("WARNING: mjInputObj.imageFormat =",
+					    mjInputObj.imageFormat);
 				outObj.conversoinResult = undefined;
 			    }
 
@@ -62,6 +75,7 @@ server = http.createServer(function(req, resp) {
 				resp.writeHead(400, responseHeader);
 				console.error("typeof outObj.conversionResult =",
 					      (typeof outObj.conversionResult));
+				console.error("data =", data);
 				resp.end(JSON.stringify({
 				    respErrorsKey:
 				      ["Unsupported conversion type"]
@@ -70,7 +84,7 @@ server = http.createServer(function(req, resp) {
 			}
 		    });
 		} catch (e) {
-		    console.log("Parsing failed");			
+		    console.log("Parsing failed");
 		    resp.writeHead(400, responseHeader);
 		    resp.end(JSON.stringify({
 			respErrorsKey: ["Invalid JSON content in request"]
