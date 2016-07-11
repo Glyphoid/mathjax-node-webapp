@@ -86,5 +86,5 @@ server = http.createServer(function(req, resp) {
 
 // TODO: Turn into command-line arguments
 port = 80;
-host = "localhost";
-server.listen(port, host);
+server.listen(port);
+console.log("Server running on port", port);
